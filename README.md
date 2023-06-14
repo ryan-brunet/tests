@@ -1,4 +1,4 @@
-# tests
+# Tests
 Contains various miscellaneous scripts used to test parts of the Grad-Shafranov solver code.
 
 ## Log of files:
