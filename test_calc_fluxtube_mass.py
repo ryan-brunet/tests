@@ -9,10 +9,10 @@ from matplotlib import pyplot as plt
 plt.rc('text',usetex=True)
 plt.rc('font', family='serif')
 
-# Test file to demonstrate calculation of the mass between flux surfaces
+# Test file to demonstrate calculation of the mass between flux surfaces. 
 
 # initialise constants
-config_file = "/Users/ryanbrunet/Documents/phd/code/gradshafranovsolver/gs-config.yaml"
+config_file = "gs-config.yaml"
 
 with open(config_file) as file:
     dictionary = yaml.load(file, Loader=yaml.Loader)
@@ -61,21 +61,40 @@ psi_grid, psi_levels = psi_gen(xgrid,mugrid,psi_star,psi_0,n_contours,aratio,dx,
 contour_array = gen_contour_array(xgrid,mugrid,psi_grid,psi_levels)
 # initialise density grid
 volume = 0.5*(4.0/3.0*np.pi*x0**3*(XMAX + alpha_ratio)**3 - aratio**3)
-density = ma/volume*np.ones(xgrid.shape)
+constant_density = ma/volume*np.ones(xgrid.shape)
 
-# analytic ratio from Brunet (2021) note
-chi = (1.0 - psi_levels*(psi_0/psi_star))**1.5
-xi = 8.0 + 12.0*psi_levels*(psi_0/psi_star) + 15.0*(psi_levels*psi_0/psi_star)**2.0
-dchi = -1.5*np.sqrt(1.0 - psi_levels*psi_0/psi_star)
-dxi = 12.0+ 30.0*psi_levels*(psi_0/psi_star)
-analytic_dmdpsi = -4.0*np.pi*density[0,0]/105.0*R_star**3.0/psi_star/(psi_0/psi_star)**4*((psi_0/psi_star)*psi_levels**3*(dchi*xi + chi*dxi) - 3*psi_levels**2*chi*xi)/(psi_levels**6)
+# analytic dmdpsi for constant density from Brunet (2021) note
+alpha_0 = x0*(XMAX+aratio)/R_star
+psi_levels_lower = psi_levels[psi_levels<psi_star/psi_0/alpha_0]
+psi_levels_upper = psi_levels[psi_levels>psi_star/psi_0/alpha_0]
+chi_upper = (1.0 - psi_levels_upper*(psi_0/psi_star))**1.5
+xi_upper = 8.0 + 12.0*psi_levels_upper*(psi_0/psi_star) + 15.0*(psi_levels_upper*psi_0/psi_star)**2.0
+dchi_upper = -1.5*np.sqrt(1.0 - psi_levels_upper*psi_0/psi_star)
+dxi_upper = 12.0+ 30.0*psi_levels_upper*(psi_0/psi_star)
+
+
+analytic_dmdpsi_upper = -4.0*np.pi*constant_density[0,0]/105.0*R_star**3.0/psi_star*((psi_0/psi_star*psi_levels_upper)**3.*(dchi_upper*xi_upper + chi_upper*dxi_upper) - 3*(psi_levels_upper*psi_0/psi_star)**2*chi_upper*xi_upper)/((psi_levels_upper*psi_0/psi_star)**6)
+
+chi_lower = (1.0 - psi_levels_lower*(psi_0/psi_star))**1.5
+xi_lower = 8.0 + 12.0*psi_levels_lower*(psi_0/psi_star) + 15.0*(psi_levels_lower*psi_0/psi_star)**2.0
+dchi_lower = -1.5*np.sqrt(1.0 - psi_levels_lower*psi_0/psi_star)
+dxi_lower = 12.0+ 30.0*psi_levels_lower*(psi_0/psi_star)
+alph_chi = (1.0 - alpha_0*psi_levels_lower*(psi_0/psi_star))**1.5
+alph_xi = 8.0 + 12.0*alpha_0*psi_levels_lower*(psi_0/psi_star) + 15.0*(alpha_0*psi_levels_lower*psi_0/psi_star)**2.0
+alph_dchi = -1.5*alpha_0*np.sqrt(1.0 - alpha_0*psi_levels_lower*psi_0/psi_star)
+alph_dxi = 12.0*alpha_0+ 30.0*alpha_0**2.*psi_levels_lower*(psi_0/psi_star)
+
+analytic_dmdpsi_lower = -4.*np.pi*constant_density[0,0]*R_star**3./105./psi_star*((psi_levels_lower*psi_0/psi_star)**3.*(dchi_lower*xi_lower + chi_lower*dxi_lower) - 3.*(psi_levels_lower*psi_0/psi_star)**2. * chi_lower * xi_lower - (psi_levels_lower*psi_0/psi_star)**3*(alph_dchi*alph_xi + alph_chi*alph_dxi) + 3.*alph_chi*alph_xi*(psi_levels_lower*psi_0/psi_star)**2.)/(psi_levels_lower*psi_0/psi_star)**6.
 
 # calculate dmdpsi
-dmdpsi = x0**3/psi_0*calc_dmdpsi(psi_grid, contour_array, density, n_contours, aratio, alpha_ratio, dmu, dx, 1, 0)
+dmdpsi = x0**3/psi_0*calc_dmdpsi(psi_grid, contour_array, constant_density, n_contours, aratio, alpha_ratio, dmu, dx, 1, 0)
 # plot comparison
 fig,ax = plt.subplots()
-ax.plot(np.log10(psi_levels), np.log10(analytic_dmdpsi), label="Analytic")
-ax.plot(np.log10(psi_levels), np.log10(dmdpsi), '.', alpha = 0.4, label = "Numerical")
-ax.set(xlabel=r"$\tilde{\psi} = \psi/\psi_0$", ylabel=r"$dM/d\psi$")
+ax.plot(psi_levels_lower*psi_0/psi_star, analytic_dmdpsi_lower*psi_0/ma, label="Analytic lower")
+ax.plot(psi_levels_upper*psi_0/psi_star, analytic_dmdpsi_upper*psi_0/ma, label="Analytic upper")
+ax.plot(psi_levels*psi_0/psi_star, dmdpsi*psi_0/ma, '.', alpha = 0.4, label = "Numerical")
+ax.axvline(R_star/x0/(XMAX + aratio), alpha = 0.4, linestyle='--', label="open-close boundary")
+ax.set(xlabel=r"$\psi/\psi_*$", ylabel=r"$dM/d\psi$")
+
 ax.legend()
 plt.show()

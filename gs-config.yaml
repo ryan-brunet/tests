@@ -1,0 +1,83 @@
+# Initial magnetic field strength
+B_star: 1.0e+8
+# NS radius
+R_star: 1.0e+4
+# Solar mass
+M_sol: 1.989e+30
+# NS mass as a multiple of solar mass (default = 1.4)
+M_NS: 1.4
+# Gravitational constant
+G: 6.6726e-11
+# EoS k factor
+k_factor: 6.1784029166471e+09
+# gamma
+gamma: 1.33333
+# Reference potential (set to 0 as a placeholder test)
+phi0: 0
+# Isothermal atmosphere speed of sound
+cs: 1.0e+6
+# Accretion mass
+m_accretion: 1.0e-5
+# Flux ratio b : psi_star/psi_a:
+bratio: 10.0
+
+
+# Define grid size:
+nr: 256
+nth: 256
+XMIN: 0.0
+XMAX: 500000.0
+MUMIN: 0.0
+MUMAX: 1.0
+X1LOW: 0.0
+LOGSCALEX: 1
+
+# Boundary conditions: Neumann : 0, Dirichlet : 1
+BCXMIN: 0  # Equatorial BC has field perpendicular to equator - dPsi/dth : 0
+BCXMAX: 1  # Polar BC fixed
+BCYMIN: 1  # Surface field fixed
+BCYMAX: 0  # Radial outer field - dPsi/dr : 0
+
+# Iteration scheme for SOR:
+w: 1.0
+w_f: 0.1
+tol: 1.0e-3
+MAXITS: 10000
+
+# Underrelaxation parameter:
+THETA: 0.995
+
+# Underrelaxation tolerance:
+epsilon: 1.0e-5
+
+# Mass-flux profile: PM04 = pm04, calculated (for isothermal eos) = calc, sigmoid function = sigmoid, combo PM04 sigmoid = sigmoid_combo, iterated_dmdpsi = use dmdpsi from file, norm_emg: normalised exponentially modified Gaussian profile:
+dmdpsi_profile: pm04
+# Steepness of slope for isothermal density profile
+isothermal_scale_factor: 10000
+# Interior mass fraction (multiple of accreted mass, ma):
+m_interior_frac: 5.0
+alpha_ratio: 1.0
+beta_ratio: 26.0
+test_theta: 0.0 #todo: make this the point where theta is set, rather than in grad_shafranov.py job() function.
+test_theta_2: 0.0
+pi_denom_factor: 1.0e+16
+sc_term_denom_factor: 5.0e-4
+sc_exponent_factor: 4.5
+
+# Cross-field diffusion term
+cross_field_diffusion: on
+
+# Maximum iterations
+itermax: 1000
+# Option to initialise grid (instead of loading in a grid from previous run). "on" = start from scratch, "off" - use previous data.
+init_grid: on
+
+# Plot options
+init_dmdpsi_plotting: off
+iter_dmdpsi_plotting: off
+density_plotting: off
+fpsi_plotting: off
+savefigures: off
+
+fpsi_iter_step: 20
+dmdpsi_iter_step: 20
