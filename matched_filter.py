@@ -35,18 +35,21 @@ ALPHA      = 2.0      # red-noise spectral exponent  (P ∝ 1/f^alpha)
 SIGMA      = 20.0     # Gaussian envelope half-width of template (samples)
 F0         = 0.05     # carrier frequency of template (cycles / sample)
 INJECT_IDX = N // 3   # sample index of injected signal (the "unknown")
-AMPLITUDE  = 5.0      # signal amplitude in units of noise std
+AMPLITUDE  = 8.0      # signal amplitude in units of noise std
 SEED       = 7
 
 rng = np.random.default_rng(SEED)
 t   = np.arange(N) * dt
 
 # ── 1. Template signal ────────────────────────────────────────────────────────
-# Gaussian-windowed sinusoid centred at index 0 (will be shifted to INJECT_IDX)
-t_tmpl   = np.arange(N) - N // 2    # centred index array
+# Build a Gaussian-windowed sinusoid centred at the middle of the array,
+# then use ifftshift to move the peak to index 0.  np.roll(template, INJECT_IDX)
+# then places the peak exactly at sample INJECT_IDX in the data.
+t_tmpl   = np.arange(N) - N // 2          # symmetric around index N//2
 template = (np.exp(-0.5 * (t_tmpl / SIGMA) ** 2)
             * np.cos(2 * np.pi * F0 * t_tmpl))
-template /= np.linalg.norm(template)  # unit-norm so SNR has clean σ units
+template  = np.fft.ifftshift(template)    # move peak from N//2 → index 0
+template /= np.linalg.norm(template)      # unit-norm so SNR has clean σ units
 
 # Shift to the injection location for adding to data
 signal_at_injection = np.roll(template, INJECT_IDX)
