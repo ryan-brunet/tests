@@ -29,7 +29,7 @@ white = rng.standard_normal(N)              # i.i.d. Gaussian samples
 
 # ── 2. Red noise via spectral shaping ────────────────────────────────────────
 # Step 1 – transform white noise to the frequency domain
-white_fft = np.fft.rfft(rng.standard_normal(N))
+white_fft = np.fft.rfft(rng.standard_normal(N)) # Compute the one-dimensional discrete Fourier Transform for real input.
 
 # Step 2 – build the 1/f^alpha shaping filter
 #   rfft returns N//2+1 non-negative frequencies; skip f=0 (DC) to avoid /0
@@ -104,6 +104,6 @@ axes[1, 1].set_ylabel("Power")
 axes[1, 1].legend()
 
 plt.tight_layout()
-plt.savefig("noise_power_spectrum.png", dpi=150, bbox_inches="tight")
-print("Plot saved to noise_power_spectrum.png")
+# plt.savefig("noise_power_spectrum.png", dpi=150, bbox_inches="tight")
+# print("Plot saved to noise_power_spectrum.png")
 plt.show()
